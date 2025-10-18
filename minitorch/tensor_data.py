@@ -88,7 +88,19 @@ def broadcast_index(
         None
     """
     # TODO: Implement for Task 2.2.
-    raise NotImplementedError("Need to implement for Task 2.2")
+    rev_big_index, rev_big_shape, rev_small_shape = (
+        list(reversed(big_index)),
+        list(reversed(big_shape)),
+        list(reversed(shape)),
+    )
+    res = []
+    for i in range(len(shape)):
+        if rev_small_shape[i] == 1:
+            res.append(0)
+        else:
+            res.append(rev_big_index[i])
+
+    out_index[:] = reversed(res)
 
 
 def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
@@ -106,7 +118,26 @@ def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
         IndexingError : if cannot broadcast
     """
     # TODO: Implement for Task 2.2.
-    raise NotImplementedError("Need to implement for Task 2.2")
+    s1, s2 = list(reversed(shape1)), list(reversed(shape2))
+    if len(shape1) < len(shape2):
+        big_shape, small_shape = s2, s1
+    else:
+        big_shape, small_shape = s1, s2
+
+    res_shape: Sequence[int] = list()
+    for i in range(len(small_shape)):
+        if big_shape[i] != small_shape[i]:
+            if big_shape[i] == 1:
+                res_shape.append(small_shape[i])
+            elif small_shape[i] == 1:
+                res_shape.append(big_shape[i])
+            else:
+                raise IndexingError(f"Cannot broadcase shapes {shape1} and {shape2}.")
+        else:
+            res_shape.append(big_shape[i])
+    for i in range(len(small_shape), len(big_shape)):
+        res_shape.append(big_shape[i])
+    return tuple(reversed(res_shape))
 
 
 def strides_from_shape(shape: UserShape) -> UserStrides:
