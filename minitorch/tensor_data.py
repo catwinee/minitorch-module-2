@@ -16,6 +16,7 @@ MAX_DIMS = 32
 
 class IndexingError(RuntimeError):
     "Exception raised for indexing errors."
+
     pass
 
 
@@ -44,7 +45,7 @@ def index_to_position(index: Index, strides: Strides) -> int:
     """
 
     # TODO: Implement for Task 2.1.
-    raise NotImplementedError("Need to implement for Task 2.1")
+    return sum(idx * strd for idx, strd in zip(index, strides))
 
 
 def to_index(ordinal: int, shape: Shape, out_index: OutIndex) -> None:
@@ -61,7 +62,10 @@ def to_index(ordinal: int, shape: Shape, out_index: OutIndex) -> None:
 
     """
     # TODO: Implement for Task 2.1.
-    raise NotImplementedError("Need to implement for Task 2.1")
+    res = [0] * len(shape)
+    for i in range(len(shape) - 1, -1, -1):
+        ordinal, res[i] = divmod(ordinal, shape[i])
+    out_index[:] = res
 
 
 def broadcast_index(
@@ -218,12 +222,14 @@ class TensorData:
         Returns:
             New `TensorData` with the same storage and a new dimension order.
         """
-        assert list(sorted(order)) == list(
-            range(len(self.shape))
-        ), f"Must give a position to each dimension. Shape: {self.shape} Order: {order}"
+        assert list(sorted(order)) == list(range(len(self.shape))), (
+            f"Must give a position to each dimension. Shape: {self.shape} Order: {order}"
+        )
 
         # TODO: Implement for Task 2.1.
-        raise NotImplementedError("Need to implement for Task 2.1")
+        new_shape = tuple(self.shape[i] for i in order)
+        new_strides = tuple(self.strides[i] for i in order)
+        return TensorData(self._storage, new_shape, new_strides)
 
     def to_string(self) -> str:
         s = ""
