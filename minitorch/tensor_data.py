@@ -88,19 +88,9 @@ def broadcast_index(
         None
     """
     # TODO: Implement for Task 2.2.
-    rev_big_index, rev_big_shape, rev_small_shape = (
-        list(reversed(big_index)),
-        list(reversed(big_shape)),
-        list(reversed(shape)),
-    )
-    res = []
-    for i in range(len(shape)):
-        if rev_small_shape[i] == 1:
-            res.append(0)
-        else:
-            res.append(rev_big_index[i])
-
-    out_index[:] = reversed(res)
+    offset = len(big_shape) - len(shape)
+    res = [0 if shape[i] == 1 else big_index[i + offset] for i in range(len(shape))]
+    out_index[:] = res
 
 
 def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
@@ -118,25 +108,42 @@ def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
         IndexingError : if cannot broadcast
     """
     # TODO: Implement for Task 2.2.
-    s1, s2 = list(reversed(shape1)), list(reversed(shape2))
-    if len(shape1) < len(shape2):
-        big_shape, small_shape = s2, s1
-    else:
-        big_shape, small_shape = s1, s2
 
-    res_shape: Sequence[int] = list()
-    for i in range(len(small_shape)):
-        if big_shape[i] != small_shape[i]:
-            if big_shape[i] == 1:
-                res_shape.append(small_shape[i])
-            elif small_shape[i] == 1:
-                res_shape.append(big_shape[i])
-            else:
-                raise IndexingError(f"Cannot broadcase shapes {shape1} and {shape2}.")
+    # naive version:
+    # s1, s2 = list(reversed(shape1)), list(reversed(shape2))
+    # if len(shape1) < len(shape2):
+    #     big_shape, small_shape = s2, s1
+    # else:
+    #     big_shape, small_shape = s1, s2
+    #
+    # res_shape: Sequence[int] = list()
+    # for i in range(len(small_shape)):
+    #     if big_shape[i] != small_shape[i]:
+    #         if big_shape[i] == 1:
+    #             res_shape.append(small_shape[i])
+    #         elif small_shape[i] == 1:
+    #             res_shape.append(big_shape[i])
+    #         else:
+    #             raise IndexingError(f"Cannot broadcase shapes {shape1} and {shape2}.")
+    #     else:
+    #         res_shape.append(big_shape[i])
+    # for i in range(len(small_shape), len(big_shape)):
+    #     res_shape.append(big_shape[i])
+    # return tuple(reversed(res_shape))
+
+    from itertools import zip_longest
+
+    ziped_shapes = zip_longest(reversed(shape1), reversed(shape2), fillvalue=1)
+    res_shape = []
+    for s1, s2 in ziped_shapes:
+        if s1 == s2:
+            res_shape.append(s1)
+        elif s1 == 1:
+            res_shape.append(s2)
+        elif s2 == 1:
+            res_shape.append(s1)
         else:
-            res_shape.append(big_shape[i])
-    for i in range(len(small_shape), len(big_shape)):
-        res_shape.append(big_shape[i])
+            raise IndexingError(f"Cannot broadcase shapes {shape1} and {shape2}.")
     return tuple(reversed(res_shape))
 
 
